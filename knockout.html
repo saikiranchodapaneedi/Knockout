@@ -12,6 +12,7 @@
     function CommonService() {
       var self = this;
       self.url = "http://localhost:3000/";
+ 
 
       self.signup = function (user) {
         return $.ajax({
@@ -34,9 +35,7 @@
 
 
       self.getVideos = function () {
-        var headers = {
-          Authorization: "Bearer " + localStorage.getItem("token")
-        };
+      
         return $.ajax({
           url: self.url + "api/videos",
           type: "GET",
@@ -145,7 +144,6 @@
         self.handleClick = function (item) {
           console.log('Clicked:', item);
           self.videoUrl(item.url)
-          // Do something with the item object
         };
         self.init = function () {
           self.getVideos();
