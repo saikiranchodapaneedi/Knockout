@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>API Example</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/knockout/3.5.1/knockout-latest.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+  <script>
+
+    function CommonService() {
+      var self = this;
+      self.url = "http://localhost:3000/";
+
+      self.signup = function (user) {
+        return $.ajax({
+          url: self.url + "signup",
+          type: "POST",
+          data: JSON.stringify(user),
+          contentType: "application/json"
+        });
+      };
+
+
+      self.login = function (user) {
+        return $.ajax({
+          url: self.url + "login",
+          type: "POST",
+          data: JSON.stringify(user),
+          contentType: "application/json"
+        });
+      };
+
+
+      self.getVideos = function () {
+        var headers = {
+          Authorization: "Bearer " + localStorage.getItem("token")
+        };
+        return $.ajax({
+          url: self.url + "api/videos",
+          type: "GET",
+          headers: headers
+        });
+      };
+
+      self.postVideos = function (body) {
+        var headers = {
+          Authorization: "Bearer " + localStorage.getItem("token")
+        };
+        return $.ajax({
+          url: self.url + "api/videos",
+          type: "POST",
+          data: JSON.stringify(body),
+          contentType: "application/json",
+          headers: headers
+        });
+      };
+
+
+      self.bookmarkVideosPost = function (id, stamp) {
+        var body = {
+          timestamp: stamp
+        };
+        var headers = {
+          Authorization: "Bearer " + localStorage.getItem("token")
+        };
+        return $.ajax({
+          url: self.url + "api/videos/bookmarks/" + id,
+          type: "POST",
+          data: JSON.stringify(body),
+          contentType: "application/json",
+          headers: headers
+        });
+      };
+
+      self.bookmarkVideos = function (id) {
+        var headers = {
+          Authorization: "Bearer " + localStorage.getItem("token")
+        };
+        return $.ajax({
+          url: self.url + "api/videos/bookmarks/" + id,
+          type: "GET",
+          headers: headers
+        });
+      };
+
+    }
+
+    var commonService = new CommonService();
+    document.addEventListener("DOMContentLoaded", function () {
+      // Your Knockout.js code here
+      function ViewModel() {
+        var self = this;
+        self.selectedMenuItem = ko.observable('signup');
+        self.username = ko.observable("");
+        self.password = ko.observable("");
+        self.response = ko.observable("");
+        self.token = ko.observable("");
+        self.videosList = ko.observableArray([]);
+        self.videoUrl = ko.observable('');
+        self.selectMenuItem = function (item) {
+          self.selectedMenuItem(item);
+        };
+
+        self.signup = function () {
+          var user = {
+            username: self.username(),
+            password: self.password()
+          };
+          commonService.signup(user)
+            .done(function (response) {
+              self.response = ko.observable(response.message)
+            })
+            .fail(function (error) {
+              self.response("Error: " + error.statusText);
+            });
+        };
+
+
+        self.login = function () {
+          var user = {
+            username: self.username(),
+            password: self.password()
+          };
+          commonService.login(user)
+            .done(function (response) {
+              self.response = ko.observable(response)
+              localStorage.setItem('token', response.token);
+              self.selectedMenuItem('video')
+              self.getVideos()
+            })
+            .fail(function (error) {
+              self.response("Error: " + error.statusText);
+            });
+        };
+        self.getVideos = function () {
+          commonService.getVideos().done(function (response) {
+            self.videosList(response.videos)
+            console.log(self.videosList)
+          }).fail(function (error) {
+            self.response('Error:' + error.statusText)
+          })
+        }
+        self.handleClick = function (item) {
+          console.log('Clicked:', item);
+          self.videoUrl(item.url)
+          // Do something with the item object
+        };
+        self.init = function () {
+          self.getVideos();
+        };
+      }
+      var viewModel = new ViewModel();
+      ko.applyBindings(viewModel);
+    })
+  </script>
+</head>
+
+<body>
+  <nav class="navbar navbar-expand-sm bg-dark navbar-dark">
+    <ul class="navbar-nav">
+      <li class="nav-item active">
+        <a class="nav-link"
+          data-bind="click: selectMenuItem.bind($data, 'signup'), css: { 'active': selectedMenuItem() === 'signup' }">signup</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link"
+          data-bind="click: selectMenuItem.bind($data, 'login'), css: { 'active': selectedMenuItem() === 'login' }">Login</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link"
+          data-bind="click: selectMenuItem.bind($data, 'video'), css: { 'active': selectedMenuItem() === 'video', enable: (videosList.length >0,videosList.length !== undefined )}">Video</a>
+      </li>
+
+    </ul>
+  </nav>
+  <div class="signup" data-bind="visible: selectedMenuItem() === 'signup'">
+    <h1>Signup Form</h1>
+    <div class="container width= 400px">
+      <form data-bind="submit: signup">
+        <div class="form-group">
+          <label for="username">Username:</label>
+          <input class="form-control" type="text" id="username" data-bind="value: username" required>
+        </div>
+        <div class="form-group">
+          <label for="password">Password:</label>
+          <input class="form-control" type="password" id="password" data-bind="value: password" required>
+        </div>
+        <button class="btn btn-primary" type="submit">Signup</button>
+      </form>
+    </div>
+  </div>
+  <div class="login" data-bind="visible: selectedMenuItem() === 'login'">
+    <form data-bind="submit: login">
+      <h1>Login Form</h1>
+      <div>
+        <label for="username">Username:</label>
+        <input class="form-control" type="text" id="username" data-bind="value: username" required>
+      </div>
+      <div>
+        <label for="password">Password:</label>
+        <input class="form-control" type="password" id="password" data-bind="value: password" required>
+      </div>
+      <button class="btn btn-primary" type="submit">Login</button>
+    </form>
+
+  </div>
+  <div class="video mt-10" data-bind="visible: selectedMenuItem() === 'video'">
+    <div class="row">
+      <div class="col-sm-4">
+        <ul class="" data-bind="foreach: videosList">
+          <div class="card bg-white text-black">
+            <div class="card-body" data-bind="text: name, click: $parent.handleClick.bind($parent, $data)"></div>
+          </div>
+        </ul>
+      </div>
+      <div class="col-sm-8">
+        <div>
+          <video class="w-100 mt-1 pr-1" controls data-bind="attr: { src: videoUrl }"></video>
+        </div>
+        <div>
+          <button class="btn btn-primary float-right">+Bookmark</button>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+
+</body>
+
+</html>
