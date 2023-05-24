@@ -1,76 +1,76 @@
-function CommonService() {
-    var self = this;
-    self.url = "http://localhost:3000/";
-  
-    self.signup = function(user) {
-      return $.ajax({
-        url: self.url + "signup",
-        type: "POST",
-        data: JSON.stringify(user),
-        contentType: "application/json"
-      });
-    };
-  
-    self.login = function(user) {
-      return $.ajax({
-        url: self.url + "login",
-        type: "POST",
-        data: JSON.stringify(user),
-        contentType: "application/json"
-      });
-    };
-  
-    self.getVideos = function() {
-      var headers = {
-        Authorization: "Bearer " + localStorage.getItem("token")
-      };
-      return $.ajax({
-        url: self.url + "api/videos",
-        type: "GET",
-        headers: headers
-      });
-    };
-  
-    self.postVideos = function(body) {
-      var headers = {
-        Authorization: "Bearer " + localStorage.getItem("token")
-      };
-      return $.ajax({
-        url: self.url + "api/videos",
-        type: "POST",
-        data: JSON.stringify(body),
-        contentType: "application/json",
-        headers: headers
-      });
-    };
-  
-    self.bookmarkVideosPost = function(id, stamp) {
-      var body = {
-        timestamp: stamp
-      };
-      var headers = {
-        Authorization: "Bearer " + localStorage.getItem("token")
-      };
-      return $.ajax({
-        url: self.url + "api/videos/bookmarks/" + id,
-        type: "POST",
-        data: JSON.stringify(body),
-        contentType: "application/json",
-        headers: headers
-      });
-    };
-  
-    self.bookmarkVideos = function(id) {
-      var headers = {
-        Authorization: "Bearer " + localStorage.getItem("token")
-      };
-      return $.ajax({
-        url: self.url + "api/videos/bookmarks/" + id,
-        type: "GET",
-        headers: headers
-      });
-    };
+class CommonService {
+  constructor() {
+    this.url = "http://localhost:3000/";
   }
-  
-  var commonService = new CommonService();
-  
+
+  signup(user) {
+    return $.ajax({
+      url: this.url + "signup",
+      type: "POST",
+      data: JSON.stringify(user),
+      contentType: "application/json"
+    });
+  }
+
+  login(user) {
+    return $.ajax({
+      url: this.url + "login",
+      type: "POST",
+      data: JSON.stringify(user),
+      contentType: "application/json"
+    });
+  }
+
+  getVideos() {
+    const headers = {
+      Authorization: "Bearer " + localStorage.getItem("token")
+    };
+    return $.ajax({
+      url: this.url + "api/videos",
+      type: "GET",
+      headers: headers
+    });
+  }
+
+  postVideos(body) {
+    const headers = {
+      Authorization: "Bearer " + localStorage.getItem("token")
+    };
+    return $.ajax({
+      url: this.url + "api/videos",
+      type: "POST",
+      data: JSON.stringify(body),
+      contentType: "application/json",
+      headers: headers
+    });
+  }
+
+  bookmarkVideosPost(id, stamp) {
+    const body = {
+      timestamp: stamp
+    };
+    const headers = {
+      Authorization: "Bearer " + localStorage.getItem("token")
+    };
+    return $.ajax({
+      url: this.url + "api/videos/bookmarks/" + id,
+      type: "POST",
+      data: JSON.stringify(body),
+      contentType: "application/json",
+      headers: headers
+    });
+  }
+
+  bookmarkVideos(id) {
+    const headers = {
+      Authorization: "Bearer " + localStorage.getItem("token")
+    };
+    return $.ajax({
+      url: this.url + "api/videos/bookmarks/" + id,
+      type: "GET",
+      headers: headers
+    });
+  }
+}
+
+const commonService = new CommonService();

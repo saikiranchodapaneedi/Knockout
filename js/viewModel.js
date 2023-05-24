@@ -1,65 +1,72 @@
-document.addEventListener("DOMContentLoaded", function () {
-    // Your Knockout.js code here
-    function ViewModel() {
-      var self = this;
-      self.selectedMenuItem = ko.observable('signup');
-      self.username = ko.observable("");
-      self.password = ko.observable("");
-      self.response = ko.observable("");
-      self.token = ko.observable("");
-      self.videosList = ko.observableArray([]);
-      self.videoUrl = ko.observable('');
-      self.selectMenuItem = function (item) {
-        self.selectedMenuItem(item);
-      };
-
-      self.signup = function () {
-        var user = {
-          username: self.username(),
-          password: self.password()
-        };
-        commonService.signup(user)
-          .done(function (response) {
-            self.response = ko.observable(response.message)
-          })
-          .fail(function (error) {
-            self.response("Error: " + error.statusText);
-          });
-      };
-
-
-      self.login = function () {
-        var user = {
-          username: self.username(),
-          password: self.password()
-        };
-        commonService.login(user)
-          .done(function (response) {
-            self.response = ko.observable(response)
-            localStorage.setItem('token', response.token);
-            self.selectedMenuItem('video')
-            self.getVideos()
-          })
-          .fail(function (error) {
-            self.response("Error: " + error.statusText);
-          });
-      };
-      self.getVideos = function () {
-        commonService.getVideos().done(function (response) {
-          self.videosList(response.videos)
-          console.log(self.videosList)
-        }).fail(function (error) {
-          self.response('Error:' + error.statusText)
-        })
-      }
-      self.handleClick = function (item) {
-        console.log('Clicked:', item);
-        self.videoUrl(item.url)
-      };
-      self.init = function () {
-        self.getVideos();
-      };
+document.addEventListener("DOMContentLoaded", () => {
+  // Your Knockout.js code here
+  class ViewModel {
+    constructor() {
+      this.selectedMenuItem = ko.observable('signup');
+      this.username = ko.observable("");
+      this.password = ko.observable("");
+      this.response = ko.observable("");
+      this.token = ko.observable("");
+      this.videosList = ko.observableArray([]);
+      this.videoUrl = ko.observable('');
     }
-    var viewModel = new ViewModel();
-    ko.applyBindings(viewModel);
-  })
+
+    selectMenuItem = (item) => {
+      this.selectedMenuItem(item);
+    };
+
+    signup = () => {
+      const user = {
+        username: this.username(),
+        password: this.password()
+      };
+      commonService.signup(user)
+        .done((response) => {
+          this.response = ko.observable(response.message);
+        })
+        .fail((error) => {
+          this.response("Error: " + error.statusText);
+        });
+    };
+
+    login = () => {
+      const user = {
+        username: this.username(),
+        password: this.password()
+      };
+      commonService.login(user)
+        .done((response) => {
+          this.response = ko.observable(response);
+          localStorage.setItem('token', response.token);
+          this.selectedMenuItem('video');
+          this.getVideos();
+        })
+        .fail((error) => {
+          this.response("Error: " + error.statusText);
+        });
+    };
+
+    getVideos = () => {
+      commonService.getVideos()
+        .done((response) => {
+          this.videosList(response.videos);
+          console.log(this.videosList);
+        })
+        .fail((error) => {
+          this.response('Error:' + error.statusText);
+        });
+    };
+
+    handleClick = (item) => {
+      console.log('Clicked:', item);
+      this.videoUrl(item.url);
+    };
+
+    init = () => {
+      this.getVideos();
+    };
+  }
+
+  const viewModel = new ViewModel();
+  ko.applyBindings(viewModel);
+});
